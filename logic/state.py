@@ -100,15 +100,20 @@ class CharacterStateService:
         if emotion == "happy":
             self.state.stress_level = _clamp(self.state.stress_level - 0.12, 0.0, 1.0)
             self.state.mood = "happy"
-        elif emotion in {"stressed", "angry"}:
+        elif emotion == "relieved":
+            self.state.stress_level = _clamp(self.state.stress_level - 0.08, 0.0, 1.0)
+            self.state.mood = "normal"
+        elif emotion in {"stressed", "angry", "anxious", "overstimulated", "conflicted"}:
             self.state.stress_level = _clamp(self.state.stress_level + 0.16, 0.0, 1.0)
             self.state.mood = "sad"
-        elif emotion == "sad":
+        elif emotion in {"sad", "lonely", "empty", "socially_tired"}:
             self.state.stress_level = _clamp(self.state.stress_level + 0.1, 0.0, 1.0)
             self.state.mood = "sad"
         elif emotion == "tired":
             self.state.energy = _clamp(self.state.energy - 0.18, 0.0, 1.0)
             self.state.mood = "sleepy"
+        else:
+            self.update_mood_from_friendship()
 
         self.save()
 

@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.py[cod]
+
+logs/
+
+input/
+
+persona/source_yowa_messages.jsonl
+persona/personality_draft.json
+persona/examples_draft.jsonl
+persona/training_dialogues.jsonl
+
+.env

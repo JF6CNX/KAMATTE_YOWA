@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import random
 from dataclasses import dataclass
 
@@ -7,17 +9,18 @@ from logic.state import CharacterState
 
 @dataclass
 class RandomAction:
-    """ランダム行動の結果です。UI はこれを見て表示や移動を行います。"""
+    """Random mascot action selected from current state and user activity."""
 
     name: str
-    line: str
+    line: str | None = None
     mood: str | None = None
     move_to_edge: bool = False
+    animation: str | None = None
     duration_ms: int = 2500
 
 
 class RandomActionManager:
-    """独り言・眠る・伸び・小移動などのランダム行動を決めます。"""
+    """Chooses low-frequency random actions without interrupting active behavior."""
 
     def __init__(self, activity_monitor: UserActivityMonitor | None = None) -> None:
         self.activity_monitor = activity_monitor or UserActivityMonitor()
@@ -32,18 +35,36 @@ class RandomActionManager:
             return None
 
         if state.energy < 0.25 or random.random() < 0.12:
-            return RandomAction("sleep", "少しだけ、うとうとするね。", "sleepy", False, 5000)
+            return RandomAction(
+                name="sleep",
+                line="少しだけ、まぶたが重いかも……",
+                mood="sleepy",
+                animation="sleepy",
+                duration_ms=5000,
+            )
 
         roll = random.random()
-        if roll < 0.2:
-            return RandomAction("stretch", "んー、ちょっと伸びるね。", "normal", False, 2800)
-        if roll < 0.35:
-            return RandomAction("edge_move", "少し場所を変えてみるね。", None, True, 2500)
+        if roll < 0.18:
+            return RandomAction(
+                name="stretch",
+                line="んん……ちょっとだけ、のびてみるね……",
+                mood="normal",
+                animation="idle",
+                duration_ms=2800,
+            )
+        if roll < 0.3:
+            return RandomAction(
+                name="edge_move",
+                line="すみっこに寄ったら、少し落ち着くかな……",
+                move_to_edge=True,
+                animation="idle",
+                duration_ms=2500,
+            )
 
-        if state.mood == "happy":
-            return RandomAction("talk", "今ちょっと機嫌いいかも。", "happy")
-        if state.mood == "sad":
-            return RandomAction("talk", "今日は静かめにそばにいるね。", "sad")
-        if state.mood == "sleepy":
-            return RandomAction("talk", "眠くなってきちゃった。", "sleepy")
-        return RandomAction("talk", "作業、無理しすぎてない？", "normal")
+        return RandomAction(
+            name="talk",
+            line=None,
+            mood=state.mood if state.mood in {"happy", "sad", "sleepy"} else "normal",
+            animation=None,
+            duration_ms=4200,
+        )
